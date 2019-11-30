@@ -10,12 +10,14 @@ int main(int argc, char* argv[]) {
 
   try {
     Client client(argv[1]);
-    client.run();
+    std::string const ip      = "127.0.0.1";
+    unsigned short const port = 1271;
+    client.run(ip, port);
+    return 0;
   } catch (std::runtime_error& e) {
     std::cerr << e.what() << std::endl;
   } catch (...) {
     std::cerr << "Uknown error :(" << std::endl;
   }
-
-  return 0;
+  return 1;
 }
