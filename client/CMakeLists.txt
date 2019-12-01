@@ -12,8 +12,6 @@ file(GLOB AUTO_SOURCES "src/*.cpp" "src/*.h")
 find_package(Threads REQUIRED)
 find_package(Boost 1.70 REQUIRED system)
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 add_executable(${PROJECT} ${AUTO_SOURCES})
 target_link_libraries(${PROJECT} Threads::Threads)
 target_link_libraries(${PROJECT} ${Boost_LIBRARIES})

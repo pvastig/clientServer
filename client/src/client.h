@@ -16,5 +16,5 @@ class Client {
 
  private:
   fs::path m_filePath;
-  std::unique_ptr<Connection> m_impConn;
+  std::unique_ptr<Connection> m_implConn;
 };
