@@ -13,8 +13,9 @@ class Server {
   Server &operator=(Server &&) = delete;
 
   Server(std::string_view ip, unsigned short port);
-  void run();
+  void run() const;
+  ~Server();
 
  private:
-  std::unique_ptr<Connection> m_Impl;
+  std::unique_ptr<Connection> m_implConn;
 };

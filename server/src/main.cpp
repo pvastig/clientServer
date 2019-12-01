@@ -1,8 +1,12 @@
-//#include "server.h"
+#include "server.h"
 
-/*int main(int argc, char* argv[]) {
-  /*try {
+#include <iostream>
+
+int main(int argc, char* argv[]) {
+  try {
+    return 0;
   } catch (std::exception& e) {
+    std::cerr << e.what() << std::endl;
   }
-  return 0;
-}*/
+  return 1;
+}
