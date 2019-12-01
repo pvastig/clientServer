@@ -1,110 +1,221 @@
-#include "server.h"
+//#include "server.h"
 
-#include <functional>
+#include <algorithm>
 #include <iostream>
-#include <memory>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
+
+namespace asio = boost::asio;
+namespace ip   = asio::ip;
+
+struct Row {
+  std::string date;
+  double price1;
+  double price2;
+};
+using Rows = std::vector<Row>;
+
+class MessageParser {
+ public:
+  MessageParser(std::string const& mess) : m_mess(mess) {}
+  void parse() {
+    if (m_mess.empty())
+      return;
+    std::vector<std::string> lines;
+    boost::split(lines, m_mess, boost::is_any_of("\n"));
+    m_rows.reserve(lines.size());
+    for (auto const& line : lines) {
+      ++m_countLine;
+      std::vector<std::string> splitStr;
+      if (line.empty()) {
+        std::cerr << "Line " << m_countLine << ": is empty" << std::endl;
+        continue;
+      }
+      boost::split(splitStr, line, boost::is_any_of(","));
+      if (splitStr.empty()) {
+        continue;
+      }
+      if (splitStr.size() != 3) {
+        std::cerr << "Line " << m_countLine << ": has invalid format"
+                  << std::endl;
+        continue;
+      }
+      // assert(!splitStr[0].empty());
+      Row row;
+      bool isValid = true;
+      if (auto const& colDate = splitStr[0]; !colDate.empty())
+        row.date = colDate;
+      else {
+        std::cerr << "Line " << line << ", column 1: the value is empty"
+                  << std::endl;
+        isValid = false;
+      }
+      if (auto optValue = getValue(splitStr[1]))
+        row.price1 = optValue.value();
+      else {
+        std::cerr << "Line " << line << ", column 1: the value " << splitStr[1]
+                  << " is incorrect" << std::endl;
+        isValid = false;
+      }
+      if (auto optValue = getValue(splitStr[2]))
+        row.price2 = optValue.value();
+      else {
+        std::cerr << "Line " << line << ", column 2: the value " << splitStr[2]
+                  << " is incorrect" << std::endl;
+        isValid = false;
+      }
+      // we fill columns in only correct data
+      if (isValid)
+        m_rows.emplace_back(row);
+    }
+  }
+
+  size_t countLine() const {
+    return m_countLine;
+  }
+
+  Rows const& rows() const {
+    return m_rows;
+  }
+
+ private:
+  std::string m_mess;
+  size_t m_countLine = 0;
+  Rows m_rows;
+
+ private:
+  std::optional<double> getValue(std::string const& str) {
+    double value = 0.;
+    try {
+      value = std::stod(str);
+    } catch (std::exception&) {
+      return std::nullopt;
+    }
+    return value;
+  }
+};
+
+std::optional<Row> findMax(Rows rows) {
+  assert(!rows.empty());
+  std::sort(rows.begin(), rows.end(), [](auto const& col1, auto const& col2) {
+    return col1.date < col2.date;
+  });
+
+  if (!rows.empty())
+    return rows.back();
+  return std::nullopt;
+}
 
 class Connection : public boost::enable_shared_from_this<Connection> {
  public:
-  using error = boost::system::error_code;
-  Connection(asio::io_service& ioService);
-  void start(ip::tcp::endpoint ep);
-  void stop();
-  bool started() const;
+  using ptr = boost::shared_ptr<Connection>;
+  Connection(asio::io_service& io_service) : m_socket(io_service) {}
+
+  static ptr create(asio::io_service& io_service) {
+    return ptr(new Connection(io_service));
+  }
+
+  ip::tcp::socket& socket() {
+    return m_socket;
+  }
+
+  void start() {
+    m_socket.async_read_some(
+        asio::buffer(m_data),
+        boost::bind(&Connection::read, shared_from_this(),
+                    asio::placeholders::error,
+                    asio::placeholders::bytes_transferred));
+  }
+
+  void stop() {
+    if (m_socket.is_open())
+      m_socket.close();
+  }
+
+  void read(boost::system::error_code const& error, size_t bytes_transferred) {
+    if (error) {
+      throw std::runtime_error(error.message());
+    }
+    std::cout << m_data << std::endl;
+    MessageParser mp(m_data);
+    mp.parse();
+    std::cout << mp.countLine() << std::endl;
+    std::string message = std::to_string(mp.countLine());
+    std::cout << mp.rows().size() << std::endl;
+    std::optional<Row> row = findMax(mp.rows());
+    message                = row.value().date;
+    std::cout << message << std::endl;
+
+    m_socket.async_write_some(
+        asio::buffer(message, maxLength),
+        boost::bind(&Connection::write, shared_from_this(),
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred));
+  }
+  void write(boost::system::error_code const& error, size_t bytes_transferred) {
+    if (error) {
+      throw std::runtime_error(error.message());
+    }
+  }
 
  private:
-  void on_connect(const error& err);
-  void on_read(const error& err, size_t bytes);
-  void on_write(const error& err, size_t bytes);
-  void do_read();
-  void do_write(const std::string& msg);
-  void process_data(const std::string& msg);
+  ip::tcp::socket m_socket;
+  static const int maxLength = 1024;
+  char m_data[maxLength];
 
- private:
-  asio::io_service& m_ioService;
-  ip::tcp::socket m_sock;
-  bool m_started;
-  static const int maxMsg    = 1024;
-  char m_readBuffer[maxMsg]  = {};
-  char m_writeBuffer[maxMsg] = {};
+  struct RAII {
+    explicit RAII(ip::tcp::socket& socket) : m_socket(socket) {}
+    ~RAII() {
+      if (m_socket.is_open())
+        m_socket.close();
+    }
+
+    ip::tcp::socket& m_socket;
+  };
+  RAII m_raii{m_socket};
 };
 
-using ptr = std::shared_ptr<Connection>;
+class Server {
+ public:
+  // constructor for accepting connection from client
+  Server(asio::io_service& io_service)
+      : m_ioService(io_service),
+        m_acceptor(
+            io_service,
+            ip::tcp::endpoint(ip::address::from_string("127.0.0.1"), 1271)) {
+    startAccept();
+  }
+  void handleAccept(Connection::ptr connection,
+                    const boost::system::error_code& err) {
+    if (!err) {
+      connection->start();
+    }
+    startAccept();
+  }
 
-Connection::Connection(asio::io_service& ioService)
-    : m_ioService(ioService), m_sock(m_ioService), m_started(true) {}
+ private:
+  boost::asio::io_service& m_ioService;
+  ip::tcp::acceptor m_acceptor;
+  void startAccept() {
+    Connection::ptr connection = Connection::create(m_ioService);
 
-void Connection::start(ip::tcp::endpoint ep) {
-  m_sock.async_connect(ep,
-                       std::bind(&Connection::on_connect, shared_from_this(),
-                                 std::placeholders::_1));
-}
-void Connection::stop() {
-  if (!m_started)
-    return;
-  m_started = false;
-  m_sock.close();
-}
-bool Connection::started() const {
-  return m_started;
-}
+    // asynchronous accept operation and wait for a new connection.
+    m_acceptor.async_accept(connection->socket(),
+                            boost::bind(&Server::handleAccept, this, connection,
+                                        asio::placeholders::error));
+  }
+};
 
-void Connection::on_connect(const error& err) {
-  // here you decide what to do with the connection: read or write
-  if (!err)
-    do_read();
-  else
-    stop();
-}
-void Connection::on_read(const error& err, size_t bytes) {
-  if (!started())
-    return;
-  std::string msg(m_readBuffer, bytes);
-  if (msg == "can_login")
-    do_write("access_data");
-  else if (msg.find("data ") == 0)
-    process_data(msg);
-  else if (msg == "login_fail")
-    stop();
-}
-void Connection::on_write(const error& err, size_t) {
-  do_read();
-}
-void Connection::do_read() {
-  m_sock.async_read_some(
-      asio::buffer(m_readBuffer),
-      std::bind(&Connection::on_read, shared_from_this(), std::placeholders::_1,
-                std::placeholders::_2));
-}
-void Connection::do_write(const std::string& msg) {
-  if (!started())
-    return;
-  // note: in case you want to send several messages before
-  // doing another async_read, you'll need several write buffers!
-  std::copy(msg.begin(), msg.end(), m_writeBuffer);
-  m_sock.async_write_some(
-      asio::buffer(m_writeBuffer, msg.size()),
-      std::bind(&Connection::on_write, shared_from_this(),
-                std::placeholders::_1, std::placeholders::_2));
-}
-void Connection::process_data(const std::string& msg) {
-  // process what comes from server, and then perform another write
-}
-
-Server::Server(std::string_view ip, unsigned short port)
-    : m_endPoint{ip::address::from_string(ip.data()), port} {}
-
-void Server::run() {
-  // ip::tcp::endpoint ep( ip::address::from_string("127.0.0.1"), 8001);
-  // connection::ptr(new connection)->start(ep);
-  ptr(new Connection(m_ioService))->start(m_endPoint);
-}
-
-int main() {
-  Server server("127.0.0.1", 1234);
-  server.run();
+int main(int argc, char* argv[]) {
+  try {
+    boost::asio::io_service io_service;
+    Server server(io_service);
+    io_service.run();
+  } catch (std::exception& e) {
+    std::cerr << e.what() << std::endl;
+  }
   return 0;
 }
