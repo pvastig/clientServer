@@ -46,10 +46,9 @@ class Connection {
     asio::read(m_socket, buf, boost::asio::transfer_all(), error);
     if (error && error != asio::error::eof)
       throw std::runtime_error(error.message());
-    std::istream in(&buf);
-    std::string msg;
-    in >> msg;
-    return msg;
+    std::ostringstream out;
+    out << &buf;
+    return out.str();
   }
 
  private:
@@ -93,18 +92,22 @@ class FileReader {
   std::string m_data;
 };
 
-Client::Client(fs::path const& filePath) {
+Client::Client(fs::path const& filePath, std::string_view ip,
+               unsigned short port)
+    : m_impConn{std::make_unique<Connection>(ip.data(), port)} {
   if (!fs::exists(filePath) || fs::is_directory(filePath) ||
       !filePath.has_filename())
     throw std::runtime_error("File path " + filePath.string() + "is incorrect");
   m_filePath = filePath;
 };
 
-void Client::run(std::string_view ip, unsigned short port) {
-  Connection connection(ip.data(), port);
+void Client::run() {
   FileReader fileReader(m_filePath);
-  connection.sendMsg(fileReader.data());
-  auto const serverMsgHash = connection.readMsg();
-  auto const clientHash    = std::to_string(fileReader.hash());
-  assert(clientHash == serverMsgHash);
+  m_impConn->sendMsg(fileReader.data());
+  auto const serverMsgHash = m_impConn->readMsg();
+  std::cout << serverMsgHash << std::endl;
+  /*auto const clientHash    = std::to_string(fileReader.hash());
+  assert(clientHash == serverMsgHash);*/
 }
+
+Client::~Client() = default;

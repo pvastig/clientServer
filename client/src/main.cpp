@@ -9,10 +9,10 @@ int main(int argc, char* argv[]) {
   }
 
   try {
-    Client client(argv[1]);
     std::string const ip      = "127.0.0.1";
     unsigned short const port = 1271;
-    client.run(ip, port);
+    Client client(argv[1], ip, port);
+    client.run();
     return 0;
   } catch (std::runtime_error& e) {
     std::cerr << e.what() << std::endl;
