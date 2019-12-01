@@ -17,7 +17,7 @@ Client::Client(fs::path const& filePath, std::string_view ip,
   m_filePath = filePath;
 };
 
-void Client::run() {
+void Client::run() const {
   FileReader fileReader(m_filePath);
   m_implConn->sendMsg(fileReader.data());
   auto const serverMsg = m_implConn->readMsg();

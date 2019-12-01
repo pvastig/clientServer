@@ -11,7 +11,7 @@ class Connection;
 class Client {
  public:
   Client(fs::path const& filePath, std::string_view ip, unsigned short port);
-  void run();
+  void run() const;
   ~Client();
 
   Client(Client const&) = delete;

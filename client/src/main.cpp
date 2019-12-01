@@ -9,9 +9,10 @@ int main(int argc, char* argv[]) {
   }
 
   try {
-    std::string const ip      = "127.0.0.1";
-    unsigned short const port = 1271;
-    Client client(argv[1], ip, port);
+    std::string const ip       = "127.0.0.1";
+    unsigned short const port  = 1271;
+    char const* const filePath = argv[1];
+    Client client(filePath, ip, port);
     client.run();
     return 0;
   } catch (std::runtime_error& e) {
