@@ -20,10 +20,8 @@ Client::Client(fs::path const& filePath, std::string_view ip,
 void Client::run() {
   FileReader fileReader(m_filePath);
   m_implConn->sendMsg(fileReader.data());
-  auto const serverMsgHash = m_implConn->readMsg();
-  std::cout << serverMsgHash << std::endl;
-  /*auto const clientHash    = std::to_string(fileReader.hash());
-  assert(clientHash == serverMsgHash);*/
+  auto const serverMsg = m_implConn->readMsg();
+  std::cout << serverMsg << std::endl;
 }
 
 Client::~Client() = default;

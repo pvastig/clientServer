@@ -14,6 +14,11 @@ class Client {
   void run();
   ~Client();
 
+  Client(Client const&) = delete;
+  Client& operator=(Client) = delete;
+  Client(Client&&)          = delete;
+  Client& operator=(Client&&) = delete;
+
  private:
   fs::path m_filePath;
   std::unique_ptr<Connection> m_implConn;
