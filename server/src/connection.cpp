@@ -1,6 +1,8 @@
 #include "connection.h"
 #include "message_parser.h"
 
+#include "../common/log.h"
+
 #include <iostream>
 
 #include <boost/bind.hpp>
@@ -36,8 +38,7 @@ void Connection::read(boost::system::error_code const& error,
   std::cout << mp.rows().size() << std::endl;
   std::optional<Row> row = findMax(mp.rows());
   message                = row.value().date;
-  std::cout << message << std::endl;
-
+  INFO << message;
   m_socket.async_write_some(
       asio::buffer(message, maxLength),
       boost::bind(&Connection::write, shared_from_this(),

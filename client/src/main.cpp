@@ -1,10 +1,10 @@
 #include "client.h"
 
-#include <iostream>
+#include "../common/log.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    std::cerr << "Incorrect arguments" << std::endl;
+    ERROR << "Incorrect arguments";
     return 1;
   }
 
@@ -16,9 +16,9 @@ int main(int argc, char* argv[]) {
     client.run();
     return 0;
   } catch (std::runtime_error& e) {
-    std::cerr << e.what() << std::endl;
+    ERROR << e.what();
   } catch (...) {
-    std::cerr << "Uknown error :(" << std::endl;
+    ERROR << "Uknown error :(";
   }
   return 1;
 }

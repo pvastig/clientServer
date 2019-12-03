@@ -2,8 +2,9 @@
 #include "connection.h"
 #include "file_reader.h"
 
+#include "../common/log.h"
+
 #include <cassert>
-#include <iostream>
 
 namespace asio = boost::asio;
 namespace ip   = asio::ip;
@@ -21,7 +22,7 @@ void Client::run() const {
   FileReader fileReader(m_filePath);
   m_implConn->sendMsg(fileReader.data());
   auto const serverMsg = m_implConn->readMsg();
-  std::cout << serverMsg << std::endl;
+  INFO << serverMsg;
 }
 
 Client::~Client() = default;

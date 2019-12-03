@@ -1,12 +1,14 @@
 #include "message_parser.h"
 
+#include "../common/log.h"
+
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 
 #include <boost/algorithm/string.hpp>
 
 MessageParser::MessageParser(std::string const& mess) : m_mess(mess) {}
+// TODO: split the function on parts
 void MessageParser::parse() {
   if (m_mess.empty())
     return;
@@ -17,40 +19,41 @@ void MessageParser::parse() {
     ++m_countLine;
     std::vector<std::string> splitStr;
     if (line.empty()) {
-      std::cerr << "Line " << m_countLine << ": is empty" << std::endl;
+      WARN << "line " << m_countLine << " : is empty";
       continue;
     }
     boost::split(splitStr, line, boost::is_any_of(","));
+    assert(!splitStr.empty());
     if (splitStr.empty()) {
       continue;
     }
     if (splitStr.size() != 3) {
-      std::cerr << "Line " << m_countLine << ": has invalid format"
-                << std::endl;
+      WARN << "line " << m_countLine << ": has invalid format";
       continue;
     }
-    // assert(!splitStr[0].empty());
+
     Row row;
     bool isValid = true;
+    // TODO: thinking about indexes
     if (auto const& colDate = splitStr[0]; !colDate.empty())
       row.date = colDate;
     else {
-      std::cerr << "Line " << line << ", column 1: the value is empty"
-                << std::endl;
+      WARN << "line " << line << ", column " << 1 << ": the value is empty"
+           << std::endl;
       isValid = false;
-    }
-    if (auto optValue = getValue(splitStr[1]))
+    }  // TODO: remove dublicated code
+    if (auto const& strValue = splitStr[1]; auto optValue = getValue(strValue))
       row.price1 = optValue.value();
     else {
-      std::cerr << "Line " << line << ", column 1: the value " << splitStr[1]
-                << " is incorrect" << std::endl;
+      WARN << "line " << line << ", column " << 2 << ": the value " << strValue
+           << " is incorrect" << std::endl;
       isValid = false;
     }
-    if (auto optValue = getValue(splitStr[2]))
+    if (auto const& strValue = splitStr[2]; auto optValue = getValue(strValue))
       row.price2 = optValue.value();
     else {
-      std::cerr << "Line " << line << ", column 2: the value " << splitStr[2]
-                << " is incorrect" << std::endl;
+      WARN << "Line " << line << ", column " << 3 << ": the value " << strValue
+           << " is incorrect" << std::endl;
       isValid = false;
     }
     // we fill columns in only correct data
@@ -71,8 +74,8 @@ std::optional<double> MessageParser::getValue(std::string const& str) {
 
 std::optional<Row> findMax(Rows rows) {
   assert(!rows.empty());
-  std::sort(rows.begin(), rows.end(), [](auto const& col1, auto const& col2) {
-    return col1.date < col2.date;
+  std::sort(rows.begin(), rows.end(), [](auto const& row1, auto const& row2) {
+    return row1.date < row2.date;
   });
 
   if (!rows.empty())
