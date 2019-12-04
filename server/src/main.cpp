@@ -1,12 +1,15 @@
+#include "../common/log.h"
+
 #include "server.h"
 
 #include <iostream>
 
-int main(int argc, char* argv[]) {
+int main(int, char**) {
   try {
-    return 0;
+    Server server("127.0.0.1", 1271);
+    server.run();
   } catch (std::exception& e) {
-    std::cerr << e.what() << std::endl;
+    ERROR << e.what() << std::endl;
   }
   return 1;
 }

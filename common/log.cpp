@@ -3,7 +3,6 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/support/date_time.hpp>
 
-namespace logging  = boost::log;
 namespace expr     = boost::log::expressions;
 namespace keywords = boost::log::keywords;
 

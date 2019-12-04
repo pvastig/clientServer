@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../common/util.h"
+
 #include <string>
 
 #include <boost/asio.hpp>
@@ -22,18 +24,5 @@ class Connection {
  private:
   asio::io_service m_ioService;
   ip::tcp::socket m_socket{m_ioService};
-
- private:
-  class RAII {
-   public:
-    explicit RAII(ip::tcp::socket& socket) : m_socket(socket) {}
-    ~RAII() {
-      if (m_socket.is_open())
-        m_socket.close();
-    }
-
-   private:
-    ip::tcp::socket& m_socket;
-  };
-  RAII m_raii{m_socket};
+  RAII<ip::tcp::socket> m_raii{m_socket};
 };

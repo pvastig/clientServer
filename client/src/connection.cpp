@@ -28,7 +28,7 @@ std::string Connection::readMsg() {
   assert(m_socket.is_open());
   asio::streambuf buf;
   boost::system::error_code error;
-  asio::read(m_socket, buf, boost::asio::transfer_all(), error);
+  asio::read(m_socket, buf, asio::transfer_all(), error);
   if (error && error != asio::error::eof)
     throw std::runtime_error(error.message());
   std::ostringstream out;

@@ -25,12 +25,10 @@ void Connection::stop() {
     m_socket.close();
 }
 
-void Connection::read(boost::system::error_code const& error,
-                      size_t bytes_transferred) {
+void Connection::read(boost::system::error_code const& error, size_t) {
   if (error) {
     throw std::runtime_error(error.message());
   }
-  std::cout << m_data << std::endl;
   MessageParser mp(m_data);
   mp.parse();
   std::cout << mp.countLine() << std::endl;
@@ -39,14 +37,12 @@ void Connection::read(boost::system::error_code const& error,
   std::optional<Row> row = findMax(mp.rows());
   message                = row.value().date;
   INFO << message;
-  m_socket.async_write_some(
-      asio::buffer(message, maxLength),
-      boost::bind(&Connection::write, shared_from_this(),
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred));
+  m_socket.async_write_some(asio::buffer(message, maxLength),
+                            boost::bind(&Connection::write, shared_from_this(),
+                                        asio::placeholders::error,
+                                        asio::placeholders::bytes_transferred));
 }
-void Connection::write(boost::system::error_code const& error,
-                       size_t bytes_transferred) {
+void Connection::write(boost::system::error_code const& error, size_t) {
   if (error) {
     throw std::runtime_error(error.message());
   }
