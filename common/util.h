@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+
+namespace util {
+
 template <class T>
 class RAII {
  public:
@@ -12,3 +16,6 @@ class RAII {
  private:
   T& m_socket;
 };
+
+size_t hashStr(std::string const& str);
+}  // namespace util

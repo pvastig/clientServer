@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    ERROR << "Incorrect arguments";
+    ERROR << "Client: Incorrect arguments";
     return 1;
   }
 
@@ -16,9 +16,9 @@ int main(int argc, char* argv[]) {
     client.run();
     return 0;
   } catch (std::runtime_error& e) {
-    ERROR << e.what();
+    ERROR << "Client: " << e.what();
   } catch (...) {
-    ERROR << "Uknown error :(";
+    ERROR << "Client: Uknown error :(";
   }
   return 1;
 }

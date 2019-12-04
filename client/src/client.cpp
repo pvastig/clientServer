@@ -2,9 +2,12 @@
 #include "connection.h"
 #include "file_reader.h"
 
-#include "../common/log.h"
+#include "log.h"
+#include "util.h"
 
 #include <cassert>
+
+#include <boost/algorithm/string.hpp>
 
 namespace asio = boost::asio;
 namespace ip   = asio::ip;
@@ -14,15 +17,23 @@ Client::Client(fs::path const& filePath, std::string_view ip,
     : m_implConn{std::make_unique<Connection>(ip.data(), port)} {
   if (!fs::exists(filePath) || fs::is_directory(filePath) ||
       !filePath.has_filename())
-    throw std::runtime_error("File path " + filePath.string() + "is incorrect");
+    throw std::runtime_error("file path " + filePath.string() + "is incorrect");
   m_filePath = filePath;
 };
 
 void Client::run() const {
-  FileReader fileReader(m_filePath);
-  m_implConn->sendMsg(fileReader.data());
+  auto const data = FileReader(m_filePath).data();
+  m_implConn->sendMsg(data);
   auto const serverMsg = m_implConn->readMsg();
-  INFO << serverMsg;
+  std::vector<std::string> mess;
+  boost::split(mess, serverMsg, boost::is_any_of(","));
+  if (mess.size() != 2)
+    throw std::runtime_error("mrong received message from server");
+
+  // first message must be hash, second the main message
+  if (std::to_string(util::hashStr(data)) != mess[0])
+    throw std::runtime_error("received message is not equal to send");
+  INFO << "Client: lines " << mess[1];
 }
 
 Client::~Client() = default;

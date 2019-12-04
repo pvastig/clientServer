@@ -15,11 +15,11 @@ class Server {
   Server &operator=(Server &&) = delete;
 
   Server(std::string_view ip, unsigned short port);
-  void run() const;
+  void run();
   ~Server();
 
  private:
-  std::unique_ptr<Connection> m_implConn;
+  Connection m_conn;
   ip::tcp::acceptor m_acceptor;
 
  private:

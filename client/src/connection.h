@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/util.h"
+#include "util.h"
 
 #include <string>
 
@@ -24,5 +24,5 @@ class Connection {
  private:
   asio::io_service m_ioService;
   ip::tcp::socket m_socket{m_ioService};
-  RAII<ip::tcp::socket> m_raii{m_socket};
+  util::RAII<ip::tcp::socket> m_raii{m_socket};
 };

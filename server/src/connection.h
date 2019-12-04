@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/util.h"
+#include "util.h"
 
 #include <string>
 
@@ -14,7 +14,7 @@ class Connection : public boost::enable_shared_from_this<Connection> {
  public:
   using ptr = boost::shared_ptr<Connection>;
   Connection(asio::io_service& io_service);
-  Connection(std::string const& ip, unsigned short port);
+  Connection();
 
   static ptr create(asio::io_service& io_service) {
     return ptr(new Connection(io_service));
@@ -38,6 +38,7 @@ class Connection : public boost::enable_shared_from_this<Connection> {
   asio::io_service m_ioService;
   ip::tcp::socket m_socket{m_ioService};
   static const int maxLength = 1024;
-  char m_data[maxLength];
-  RAII<ip::tcp::socket> m_raii{m_socket};
+  char m_data[maxLength]     = {0};
+
+  util::RAII<ip::tcp::socket> m_raii{m_socket};
 };

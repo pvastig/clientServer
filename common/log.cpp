@@ -17,7 +17,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, loggerType) {
           boost::log::sinks::file::rotation_at_time_point(0, 0, 0),
       keywords::auto_flush = true,
       // TODO: make possability to set outside
-      // keywords::open_mode  = (std::ios::out | std::ios::app),
+      keywords::open_mode = (std::ios::out | std::ios::app),
       keywords::format =
           (expr::stream << expr::format_date_time<boost::posix_time::ptime>(
                                "TimeStamp", "%d.%m.%y %H:%M:%S.%f")

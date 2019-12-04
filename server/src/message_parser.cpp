@@ -19,7 +19,7 @@ void MessageParser::parse() {
     ++m_countLine;
     std::vector<std::string> splitStr;
     if (line.empty()) {
-      WARN << "line " << m_countLine << " : is empty";
+      WARN << "Server: line " << m_countLine << " : is empty";
       continue;
     }
     boost::split(splitStr, line, boost::is_any_of(","));
@@ -28,7 +28,7 @@ void MessageParser::parse() {
       continue;
     }
     if (splitStr.size() != 3) {
-      WARN << "line " << m_countLine << ": has invalid format";
+      WARN << "Server: line " << m_countLine << ": has invalid format";
       continue;
     }
 
@@ -38,22 +38,22 @@ void MessageParser::parse() {
     if (auto const& colDate = splitStr[0]; !colDate.empty())
       row.date = colDate;
     else {
-      WARN << "line " << line << ", column " << 1 << ": the value is empty"
-           << std::endl;
+      WARN << "Server: line " << line << ", column " << 1
+           << ": the value is empty" << std::endl;
       isValid = false;
     }  // TODO: remove dublicated code
     if (auto const& strValue = splitStr[1]; auto optValue = getValue(strValue))
       row.price1 = optValue.value();
     else {
-      WARN << "line " << line << ", column " << 2 << ": the value " << strValue
-           << " is incorrect" << std::endl;
+      WARN << "Server: line " << line << ", column " << 2 << ": the value "
+           << strValue << " is incorrect" << std::endl;
       isValid = false;
     }
     if (auto const& strValue = splitStr[2]; auto optValue = getValue(strValue))
       row.price2 = optValue.value();
     else {
-      WARN << "Line " << line << ", column " << 3 << ": the value " << strValue
-           << " is incorrect" << std::endl;
+      WARN << "Server: line " << line << ", column " << 3 << ": the value "
+           << strValue << " is incorrect" << std::endl;
       isValid = false;
     }
     // we fill columns in only correct data
@@ -73,7 +73,6 @@ std::optional<double> MessageParser::getValue(std::string const& str) {
 }
 
 std::optional<Row> findMax(Rows rows) {
-  assert(!rows.empty());
   std::sort(rows.begin(), rows.end(), [](auto const& row1, auto const& row2) {
     return row1.date < row2.date;
   });

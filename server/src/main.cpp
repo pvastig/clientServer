@@ -1,15 +1,18 @@
-#include "../common/log.h"
-
 #include "server.h"
 
-#include <iostream>
+#include "../common/log.h"
 
 int main(int, char**) {
   try {
-    Server server("127.0.0.1", 1271);
+    std::string const ip      = "127.0.0.1";
+    unsigned short const port = 1271;
+    Server server(ip, port);
     server.run();
   } catch (std::exception& e) {
-    ERROR << e.what() << std::endl;
+    ERROR << "Server: " << e.what() << std::endl;
+  } catch (...) {
+    ERROR << "Client: Uknown error :(";
   }
+
   return 1;
 }

@@ -24,6 +24,10 @@ class MessageParser {
     return m_rows;
   }
 
+  std::string const& message() const {
+    return m_mess;
+  }
+
  private:
   std::string m_mess;
   size_t m_countLine = 0;

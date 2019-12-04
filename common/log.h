@@ -11,9 +11,9 @@ namespace logging = boost::log;
 #define ERROR BOOST_LOG_SEV(logger::get(), logging::trivial::error)
 
 // TODO: make possability to set path outside
-#define SYS_LOGFILE "clientServer.log"
+#define SYS_LOGFILE "../../logs/client_server.log"
 
 using loggerType =
-    boost::log::sources::severity_logger_mt<logging::trivial::severity_level>;
+    logging::sources::severity_logger_mt<logging::trivial::severity_level>;
 
 BOOST_LOG_GLOBAL_LOGGER(logger, loggerType)
