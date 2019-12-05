@@ -5,10 +5,10 @@
 namespace util {
 
 template <class T>
-class RAII {
+class SocketRAII {
  public:
-  explicit RAII(T& socket) : m_socket(socket) {}
-  ~RAII() {
+  explicit SocketRAII(T& socket) : m_socket(socket) {}
+  ~SocketRAII() {
     if (m_socket.is_open())
       m_socket.close();
   }

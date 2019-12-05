@@ -8,6 +8,8 @@
 
 #include <boost/bind.hpp>
 
+// namespace system = boost::system;
+
 Connection::Connection(asio::io_service& io_service) : m_socket(io_service) {}
 
 Connection::Connection() {}
@@ -24,29 +26,34 @@ void Connection::stop() {
     m_socket.close();
 }
 
-void Connection::read(boost::system::error_code const& error, size_t) {
+void Connection::read(sys::error_code const& error, size_t bytes_transferred) {
   if (error)
     throw std::runtime_error(error.message());
+
+  INFO << "Server: read bytes: " << bytes_transferred;
 
   MessageParser mp(m_data);
   mp.parse();
 
+  // first we write hase, secod - count of line
   std::string const message = std::to_string(util::hashStr(mp.message())) +
                               "," + std::to_string(mp.countLine());
 
   if (auto const row = findMax(mp.rows())) {
     auto const& value = row.value();
     if (value.price2 == 0.0)
-      throw std::logic_error("Divided by zero, check columns");
-    INFO << "Server: " << value.date << " " << (value.price1 / value.price2);
+      throw std::logic_error("dividing by zero, check columns");
+    INFO << "Server: max data: " << value.date << " "
+         << (value.price1 / value.price2);
   }
   m_socket.async_write_some(asio::buffer(message, message.size()),
                             boost::bind(&Connection::write, shared_from_this(),
                                         asio::placeholders::error,
                                         asio::placeholders::bytes_transferred));
 }
-void Connection::write(boost::system::error_code const& error, size_t) {
+void Connection::write(sys::error_code const& error, size_t bytes_transferred) {
   if (error) {
     throw std::runtime_error(error.message());
   }
+  INFO << "Server: wrote bytes: " << bytes_transferred;
 }

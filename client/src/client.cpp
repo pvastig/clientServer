@@ -22,18 +22,20 @@ Client::Client(fs::path const& filePath, std::string_view ip,
 };
 
 void Client::run() const {
-  auto const data = FileReader(m_filePath).data();
-  m_implConn->sendMsg(data);
+  auto const msg = FileReader(m_filePath).data();
+  m_implConn->sendMsg(msg);
+  INFO << "Client: send file: " << m_filePath;
   auto const serverMsg = m_implConn->readMsg();
+
   std::vector<std::string> mess;
   boost::split(mess, serverMsg, boost::is_any_of(","));
   if (mess.size() != 2)
-    throw std::runtime_error("mrong received message from server");
+    throw std::runtime_error("wrong received message from server");
 
   // first message must be hash, second the main message
-  if (std::to_string(util::hashStr(data)) != mess[0])
-    throw std::runtime_error("received message is not equal to send");
-  INFO << "Client: lines " << mess[1];
+  if (util::hashStr(msg) != std::stoull(mess[0]))
+    throw std::runtime_error("received message is not equal to sent message");
+  INFO << "Client: total lines: " << mess[1];
 }
 
 Client::~Client() = default;

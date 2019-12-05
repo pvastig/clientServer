@@ -1,6 +1,6 @@
 #include "message_parser.h"
 
-#include "../common/log.h"
+#include "log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -12,6 +12,7 @@ MessageParser::MessageParser(std::string const& mess) : m_mess(mess) {}
 void MessageParser::parse() {
   if (m_mess.empty())
     return;
+
   std::vector<std::string> lines;
   boost::split(lines, m_mess, boost::is_any_of("\n"));
   m_rows.reserve(lines.size());
@@ -35,24 +36,27 @@ void MessageParser::parse() {
     Row row;
     bool isValid = true;
     // TODO: thinking about indexes
-    if (auto const& colDate = splitStr[0]; !colDate.empty())
+    size_t index = 0;
+    if (auto const& colDate = splitStr[index++]; !colDate.empty())
       row.date = colDate;
     else {
-      WARN << "Server: line " << line << ", column " << 1
+      WARN << "Server: line " << line << ", column " << index
            << ": the value is empty" << std::endl;
       isValid = false;
     }  // TODO: remove dublicated code
-    if (auto const& strValue = splitStr[1]; auto optValue = getValue(strValue))
+    if (auto const& strValue = splitStr[index++];
+        auto optValue        = getValue(strValue))
       row.price1 = optValue.value();
     else {
-      WARN << "Server: line " << line << ", column " << 2 << ": the value "
+      WARN << "Server: line " << line << ", column " << index << ": the value "
            << strValue << " is incorrect" << std::endl;
       isValid = false;
     }
-    if (auto const& strValue = splitStr[2]; auto optValue = getValue(strValue))
+    if (auto const& strValue = splitStr[index++];
+        auto optValue        = getValue(strValue))
       row.price2 = optValue.value();
     else {
-      WARN << "Server: line " << line << ", column " << 3 << ": the value "
+      WARN << "Server: line " << line << ", column " << index << ": the value "
            << strValue << " is incorrect" << std::endl;
       isValid = false;
     }
@@ -60,6 +64,9 @@ void MessageParser::parse() {
     if (isValid)
       m_rows.emplace_back(row);
   }
+  assert(m_countLine > m_rows.size());
+  INFO << "Server: total line: " << m_countLine << ", good: " << m_rows.size()
+       << ", warn: " << (m_countLine - m_rows.size());
 }
 
 std::optional<double> MessageParser::getValue(std::string const& str) {

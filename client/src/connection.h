@@ -24,5 +24,5 @@ class Connection {
  private:
   asio::io_service m_ioService;
   ip::tcp::socket m_socket{m_ioService};
-  util::RAII<ip::tcp::socket> m_raii{m_socket};
+  util::SocketRAII<ip::tcp::socket> m_raii{m_socket};
 };
