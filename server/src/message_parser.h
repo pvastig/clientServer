@@ -1,15 +1,20 @@
 #pragma once
 
+#include <map>
 #include <optional>
 #include <string>
-#include <vector>
+
+#include <boost/date_time.hpp>
+
+namespace posix_time = boost::posix_time;
 
 struct Row {
   std::string date;
   double price1;
   double price2;
 };
-using Rows = std::vector<Row>;
+
+using Rows = std::map<posix_time::ptime, Row>;
 
 class MessageParser {
  public:
@@ -35,6 +40,7 @@ class MessageParser {
 
  private:
   std::optional<double> getValue(std::string const& str);
+  bool insert(Row row);
 };
 
 std::optional<Row> findMax(Rows rows);

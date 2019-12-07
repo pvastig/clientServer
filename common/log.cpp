@@ -22,7 +22,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, loggerType) {
           (expr::stream << expr::format_date_time<boost::posix_time::ptime>(
                                "TimeStamp", "%d.%m.%y %H:%M:%S.%f")
                         << " ["
-                        << expr::attr<boost::log::trivial::severity_level>(
+                        << expr::attr<logging::trivial::severity_level>(
                                "Severity")
                         << "]: " << expr::smessage));
 
@@ -33,7 +33,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, loggerType) {
           (expr::stream << expr::format_date_time<boost::posix_time::ptime>(
                                "TimeStamp", "%d.%m.%y %H:%M:%S.%f")
                         << " ["
-                        << expr::attr<boost::log::trivial::severity_level>(
+                        << expr::attr<logging::trivial::severity_level>(
                                "Severity")
                         << "]: " << expr::smessage));
   logging::core::get()->set_filter(logging::trivial::severity >=
