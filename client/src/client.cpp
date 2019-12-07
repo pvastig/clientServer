@@ -19,7 +19,9 @@ Client::Client(fs::path const& filePath, std::string_view ip,
       !filePath.has_filename())
     throw std::runtime_error("file path " + filePath.string() + "is incorrect");
   m_filePath = filePath;
-};
+}
+
+Client::~Client() = default;
 
 void Client::run() const {
   auto const msg = FileReader(m_filePath).data();
@@ -37,5 +39,3 @@ void Client::run() const {
     throw std::runtime_error("received message is not equal to sent message");
   INFO << "Client: total lines: " << mess[1];
 }
-
-Client::~Client() = default;

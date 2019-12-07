@@ -5,7 +5,6 @@
 #include <cassert>
 #include <functional>
 #include <string>
-#include <string_view>
 
 #include <boost/algorithm/string.hpp>
 
@@ -14,18 +13,18 @@ const std::string msgServerLine = "Server: line: ";
 namespace {
 posix_time::ptime convertToTime(std::string const& s) {
   using namespace boost::posix_time;
-  std::vector<std::string> dateTime;
+  StringArray dateTime;
   boost::split(dateTime, s, boost::is_any_of(" "));
 
-  std::vector<std::string> splitDate;
+  StringArray splitDate;
   boost::split(splitDate, dateTime[0], boost::is_any_of("."));
-  std::vector<std::string> splitTime;
+  StringArray splitTime;
   boost::split(splitTime, dateTime[1], boost::is_any_of(":"));
 
   if (splitDate.size() != 3)
-    throw std::logic_error(s + " has incorrect format");
+    throw std::logic_error(s + " has an incorrect date format");
   if (splitTime.size() != 3)
-    throw std::logic_error(s + " has time format");
+    throw std::logic_error(s + " has an incorrect time format");
 
   ptime pt;
   try {
@@ -33,7 +32,7 @@ posix_time::ptime convertToTime(std::string const& s) {
                          splitTime[0] + splitTime[1] + splitTime[2]);
     pt = from_iso_string(ts);
   } catch (std::exception&) {
-    throw std::logic_error(s + " has incorrect format");
+    throw std::logic_error(s + " has an incorrect format");
   }
   return pt;
 }
@@ -60,10 +59,9 @@ void MessageParser::parse() {
       return StringArray{};
     if (data.size() != 3) {
       WARN << msgServerLine << m_countLine << ", " << line
-           << " has invalid format";
+           << " has an invalid format";
       StringArray{};
     }
-    INFO << data[0] << " " << data[1] << " " << data[2];
     return data;
   };
 
@@ -98,7 +96,7 @@ void MessageParser::parse() {
         value = optValue.value();
       else {
         WARN << msgServerLine << line << ", column: " << colIndex
-             << ": the value " << strValue << " is incorrect" << std::endl;
+             << ": the value " << strValue << " is incorrect";
         return false;
       }
       return true;
@@ -140,10 +138,6 @@ bool MessageParser::insert(Row row) {
 std::optional<Row> findMax(Rows rows) {
   if (rows.empty())
     return std::nullopt;
-  for (auto& [secondFromEpoch, row] : rows) {
-    auto [date, price1, price2] = row;
-    INFO << secondFromEpoch << " " << date << " " << price1 << " " << price2;
-  }
   auto const& [secondFromEpoch, row] = *rows.rbegin();
   return row;
 }

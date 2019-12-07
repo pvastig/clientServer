@@ -24,6 +24,6 @@ class Server {
 
  private:
   void startAccept();
-  void accept(Connection::ptr connection,
+  void accept(Connection::ptr const &connection,
               boost::system::error_code const &error);
 };

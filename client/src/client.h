@@ -11,13 +11,13 @@ class Connection;
 class Client {
  public:
   Client(fs::path const& filePath, std::string_view ip, unsigned short port);
-  void run() const;
-  ~Client();
-
   Client(Client const&) = delete;
-  Client& operator=(Client) = delete;
+  Client& operator=(Client const&) = delete;
   Client(Client&&)          = delete;
   Client& operator=(Client&&) = delete;
+  ~Client();
+
+  void run() const;
 
  private:
   fs::path m_filePath;

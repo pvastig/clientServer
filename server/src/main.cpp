@@ -4,6 +4,7 @@
 
 int main(int, char**) {
   try {
+    // TODO: make possability to set ip, port outside
     std::string const ip      = "127.0.0.1";
     unsigned short const port = 1271;
     Server server(ip, port);

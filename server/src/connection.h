@@ -6,6 +6,8 @@
 
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace asio = boost::asio;
 namespace ip   = asio::ip;
@@ -14,11 +16,16 @@ namespace sys  = boost::system;
 class Connection : public boost::enable_shared_from_this<Connection> {
  public:
   using ptr = boost::shared_ptr<Connection>;
-  Connection(asio::io_service& io_service);
-  Connection();
+  explicit Connection(asio::io_service& ioService);
+  Connection()                  = default;
+  Connection(Connection const&) = delete;
+  Connection& operator=(Connection const&) = delete;
+  Connection(Connection&&)                 = delete;
+  Connection& operator=(Connection&&) = delete;
+  ~Connection()                       = default;
 
-  static ptr create(asio::io_service& io_service) {
-    return ptr(new Connection(io_service));
+  static ptr create(asio::io_service& ioService) {
+    return boost::make_shared<Connection>(ioService);
   }
 
   asio::io_service& ioService() {
@@ -38,7 +45,8 @@ class Connection : public boost::enable_shared_from_this<Connection> {
  private:
   asio::io_service m_ioService;
   ip::tcp::socket m_socket{m_ioService};
-  static const int maxLength = 1024;
-  char m_data[maxLength]     = {};
+  // TODO investigate new type std::byte?
+  static const int m_maxLength = 1024;
+  char m_data[m_maxLength]     = {};
   util::SocketRAII<ip::tcp::socket> m_raii{m_socket};
 };

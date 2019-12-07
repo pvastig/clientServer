@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <map>
 #include <optional>
 #include <string>
@@ -20,15 +21,24 @@ using Rows = std::map<posix_time::ptime, Row>;
 
 class MessageParser {
  public:
-  MessageParser(std::string const& mess);
+  explicit MessageParser(std::string const& mess);
+  MessageParser(MessageParser const&) = default;
+  MessageParser& operator=(MessageParser const&) = default;
+  MessageParser(MessageParser&&)                 = default;
+  MessageParser& operator=(MessageParser&&) = default;
+  ~MessageParser()                          = default;
+
   void parse();
 
   size_t countLine() const {
     return m_countLine;
   }
 
-  Rows const& rows() const {
+  Rows rows() const& {
     return m_rows;
+  }
+  Rows rows() && {
+    return std::move(m_rows);
   }
 
   std::string const& message() const {

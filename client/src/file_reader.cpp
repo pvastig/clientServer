@@ -2,9 +2,9 @@
 
 #include <fstream>
 #include <memory>
+#include <vector>
 
 FileReader::FileReader(fs::path const& filePath)
-    : m_data(std::string(
-          (std::istreambuf_iterator<char>(
-              *(std::unique_ptr<std::ifstream>(new std::ifstream(filePath))))),
-          std::istreambuf_iterator<char>())) {}
+    : m_data{std::istreambuf_iterator<char>(
+            *std::make_unique<std::ifstream>(filePath)),
+             std::istreambuf_iterator<char>()} {}

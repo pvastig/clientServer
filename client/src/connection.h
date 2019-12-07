@@ -12,14 +12,14 @@ namespace ip   = asio::ip;
 class Connection {
  public:
   Connection(std::string const& ip, unsigned short port);
-  ~Connection();
+  Connection(Connection const&) = delete;
+  Connection& operator=(Connection const&) = delete;
+  Connection(Connection&&)                 = delete;
+  Connection& operator=(Connection&&) = delete;
+  ~Connection()                       = default;
+
   void sendMsg(std::string const& s);
   std::string readMsg();
-
-  Connection(Connection const&) = delete;
-  Connection& operator=(Connection) = delete;
-  Connection(Connection&&)          = delete;
-  Connection& operator=(Connection&&) = delete;
 
  private:
   asio::io_service m_ioService;

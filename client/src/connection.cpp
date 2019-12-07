@@ -7,14 +7,12 @@
 namespace sys = boost::system;
 
 Connection::Connection(std::string const& ip, unsigned short port) {
-  boost::system::error_code error;
+  sys::error_code error;
   m_socket.connect(ip::tcp::endpoint(ip::address::from_string(ip), port),
                    error);
   if (error)
     throw std::runtime_error(error.message());
 }
-
-Connection::~Connection() = default;
 
 void Connection::sendMsg(std::string const& s) {
   assert(m_socket.is_open());
@@ -23,9 +21,8 @@ void Connection::sendMsg(std::string const& s) {
   out << s;
   sys::error_code error;
   write(m_socket, buf, error);
-  if (error) {
+  if (error)
     throw std::runtime_error(error.message());
-  }
 }
 
 std::string Connection::readMsg() {

@@ -9,6 +9,7 @@ int main(int argc, char* argv[]) {
   }
 
   try {
+    // TODO: make possability to set ip, port outside
     std::string const ip       = "127.0.0.1";
     unsigned short const port  = 1271;
     char const* const filePath = argv[1];

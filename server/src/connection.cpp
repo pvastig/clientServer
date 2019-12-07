@@ -10,12 +10,11 @@
 
 // namespace system = boost::system;
 
-Connection::Connection(asio::io_service& io_service) : m_socket(io_service) {}
-
-Connection::Connection() {}
+Connection::Connection(asio::io_service& ioService) : m_socket(ioService) {}
 
 void Connection::start() {
-  m_socket.async_read_some(asio::buffer(m_data),
+  // TODO thinking about a big message
+  m_socket.async_read_some(asio::buffer(m_data, m_maxLength),
                            boost::bind(&Connection::read, shared_from_this(),
                                        asio::placeholders::error,
                                        asio::placeholders::bytes_transferred));
@@ -35,7 +34,7 @@ void Connection::read(sys::error_code const& error, size_t bytes_transferred) {
   MessageParser mp(m_data);
   mp.parse();
 
-  // first we write hase, secod - count of line
+  // first we write hach, secod - count of line
   std::string const message = std::to_string(util::hashStr(mp.message())) +
                               "," + std::to_string(mp.countLine());
 
@@ -43,8 +42,8 @@ void Connection::read(sys::error_code const& error, size_t bytes_transferred) {
     auto const& value = row.value();
     if (value.price2 == 0.0)
       throw std::logic_error("dividing by zero, check columns");
-    INFO << "Server: max data: " << value.date << " "
-         << (value.price1 / value.price2);
+    INFO << "Server: max: " << value.date << " " << std::setprecision(2)
+         << std::fixed << (value.price1 / value.price2);
   }
   m_socket.async_write_some(asio::buffer(message, message.size()),
                             boost::bind(&Connection::write, shared_from_this(),

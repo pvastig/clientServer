@@ -17,7 +17,7 @@ void Server::run() {
   m_conn.ioService().run();
 }
 
-void Server::accept(Connection::ptr connection,
+void Server::accept(Connection::ptr const& connection,
                     boost::system::error_code const& error) {
   if (!error) {
     connection->start();
