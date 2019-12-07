@@ -3,9 +3,11 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include <boost/date_time.hpp>
 
+using StringArray    = std::vector<std::string>;
 namespace posix_time = boost::posix_time;
 
 struct Row {
