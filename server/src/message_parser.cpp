@@ -135,9 +135,9 @@ bool MessageParser::insert(Row row) {
   return inserted;
 }
 
-std::optional<Row> findMax(Rows rows) {
+std::optional<Row> getMaxRow(Rows rows) {
   if (rows.empty())
     return std::nullopt;
-  auto const& [secondFromEpoch, row] = *rows.rbegin();
+  auto [ptime, row] = *rows.rbegin();
   return row;
 }

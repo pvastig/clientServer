@@ -55,4 +55,4 @@ class MessageParser {
   bool insert(Row row);
 };
 
-std::optional<Row> findMax(Rows rows);
+std::optional<Row> getMaxRow(Rows rows);

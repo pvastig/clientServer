@@ -38,7 +38,7 @@ void Connection::read(sys::error_code const& error, size_t bytes_transferred) {
   std::string const message = std::to_string(util::hashStr(mp.message())) +
                               "," + std::to_string(mp.countLine());
 
-  if (auto const row = findMax(mp.rows())) {
+  if (auto const row = getMaxRow(mp.rows())) {
     auto const& value = row.value();
     if (value.price2 == 0.0)
       throw std::logic_error("dividing by zero, check columns");
