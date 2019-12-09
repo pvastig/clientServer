@@ -26,7 +26,7 @@ void Connection::stop() {
 }
 
 void Connection::read(sys::error_code const& error, size_t bytes_transferred) {
-  if (error)
+  if (error && error != asio::error::eof)
     throw std::runtime_error(error.message());
 
   INFO << "Server: read bytes: " << bytes_transferred;
@@ -37,7 +37,6 @@ void Connection::read(sys::error_code const& error, size_t bytes_transferred) {
   // first we write hach, secod - count of line
   std::string const message = std::to_string(util::hashStr(mp.message())) +
                               "," + std::to_string(mp.countLine());
-
   if (auto const row = getMaxRow(mp.rows())) {
     auto const& value = row.value();
     if (value.price2 == 0.0)

@@ -25,8 +25,10 @@ Client::~Client() = default;
 
 void Client::run() const {
   auto const msg = FileReader(m_filePath).data();
+  if (msg.empty())
+    throw std::logic_error("sent message is empty");
   m_implConn->sendMsg(msg);
-  INFO << "Client: send file: " << m_filePath;
+  INFO << "Client: sent file: " << m_filePath;
   auto const serverMsg = m_implConn->readMsg();
 
   std::vector<std::string> mess;

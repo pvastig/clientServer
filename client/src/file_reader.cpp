@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <memory>
-#include <vector>
 
 FileReader::FileReader(fs::path const& filePath)
     : m_data{std::istreambuf_iterator<char>(
